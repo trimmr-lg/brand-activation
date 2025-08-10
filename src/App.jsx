@@ -52,7 +52,7 @@ function Auth(){
   const [email,setEmail] = useState('')
   const [sent,setSent] = useState(false)
   async function signIn(e){ e.preventDefault()
-    const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: 'https://brand-activation-seven.vercel.app/' } })
+  const { error } = await supabase.auth.signInWithOtp({email,options: { emailRedirectTo: 'https://brand-activation-seven.vercel.app' }});
     if(!error) setSent(true); else alert(error.message)
   }
   return (
