@@ -12,7 +12,7 @@ export default function RescheduleModal({ open, eventId, onClose, onSaved }) {
   useEffect(()=>{ if(!open) return; (async ()=>{
     const [{ data: e }, { data: s }] = await Promise.all([
       supabase.from('events').select('date,start_time,end_time').eq('id', eventId).maybeSingle(),
-      supabase.from('app_settings').select('lead_time_days').maybeSingle()
+      + supabase.from('app_settings_view').select('lead_time_days').maybeSingle()
     ])
     if (e){ setDate(e.date); setStart(e.start_time); setEnd(e.end_time) }
     if (s) setLeadDays(s.lead_time_days ?? 0)
