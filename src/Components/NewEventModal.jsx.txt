@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../lib/supa'
 
+const headerFont = { fontFamily: 'Montserrat, Inter, system-ui, Arial, sans-serif', textTransform:'uppercase', letterSpacing:'0.08em' }
+
 export default function NewEventModal({ open, onClose, onCreated }) {
   const [brands, setBrands] = useState([])
   const [dispensaries, setDispensaries] = useState([])
@@ -75,32 +77,32 @@ export default function NewEventModal({ open, onClose, onCreated }) {
   return (
     <div className="modal">
       <div className="modal-card">
-        <h2>Request New Event</h2>
+        <h2 style={headerFont}>Request New Event</h2>
         <form onSubmit={createEvent} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <label className="muted">Brand</label>
-            <select className="input" required value={brandId} onChange={e => setBrandId(e.target.value)}>
+            <label className="muted" style={headerFont}>Brand</label>
+            <select className="input" required value={brandId} onChange={e=>setBrandId(e.target.value)}>
               <option value="">Select…</option>
               {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="muted">Dispensary</label>
-            <select className="input" required value={dispId} onChange={e => setDispId(e.target.value)}>
+            <label className="muted" style={headerFont}>Dispensary</label>
+            <select className="input" required value={dispId} onChange={e=>setDispId(e.target.value)}>
               <option value="">Select…</option>
               {dispensaries.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="muted">Campaign (optional)</label>
-            <select className="input" value={campId} onChange={e => setCampId(e.target.value)}>
+            <label className="muted" style={headerFont}>Campaign (optional)</label>
+            <select className="input" value={campId} onChange={e=>setCampId(e.target.value)}>
               <option value="">—</option>
               {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="muted">Type</label>
-            <select className="input" value={type} onChange={e => setType(e.target.value)}>
+            <label className="muted" style={headerFont}>Type</label>
+            <select className="input" value={type} onChange={e=>setType(e.target.value)}>
               <option value="demo">Demo</option>
               <option value="education">Education</option>
               <option value="pop_up">Pop-up</option>
@@ -109,29 +111,29 @@ export default function NewEventModal({ open, onClose, onCreated }) {
             </select>
           </div>
           <div>
-            <label className="muted">Date {leadDays ? `(≥ ${minStr})` : ''}</label>
-            <input className="input" type="date" required min={minStr} value={date} onChange={e => setDate(e.target.value)} />
+            <label className="muted" style={headerFont}>Date {leadDays ? `(≥ ${minStr})` : ''}</label>
+            <input className="input" type="date" required min={minStr} value={date} onChange={e=>setDate(e.target.value)} />
           </div>
           <div className="row">
             <div style={{ flex: 1 }}>
-              <label className="muted">Start</label>
-              <input className="input" type="time" required value={start} onChange={e => setStart(e.target.value)} />
+              <label className="muted" style={headerFont}>Start</label>
+              <input className="input" type="time" required value={start} onChange={e=>setStart(e.target.value)} />
             </div>
             <div style={{ width: 12 }} />
             <div style={{ flex: 1 }}>
-              <label className="muted">End</label>
-              <input className="input" type="time" required value={end} onChange={e => setEnd(e.target.value)} />
+              <label className="muted" style={headerFont}>End</label>
+              <input className="input" type="time" required value={end} onChange={e=>setEnd(e.target.value)} />
             </div>
           </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label className="muted">Notes</label>
-            <textarea className="input" rows="3" value={notes} onChange={e => setNotes(e.target.value)} />
+          <div style={{ gridColumn:'1 / -1' }}>
+            <label className="muted" style={headerFont}>Notes</label>
+            <textarea className="input" rows="3" value={notes} onChange={e=>setNotes(e.target.value)} />
           </div>
-          {underLead && <div className="text-danger" style={{ gridColumn: '1 / -1' }}>Date violates lead time policy.</div>}
-          {err && <div className="text-danger" style={{ gridColumn: '1 / -1' }}>{err}</div>}
-          <div className="row" style={{ gridColumn: '1 / -1', marginTop: 8 }}>
+          {underLead && <div className="text-danger" style={{ gridColumn:'1 / -1' }}>Date violates lead time policy.</div>}
+          {err && <div className="text-danger" style={{ gridColumn:'1 / -1' }}>{err}</div>}
+          <div className="row" style={{ gridColumn:'1 / -1', marginTop:8 }}>
             <button type="button" className="btn outline" onClick={onClose}>Close</button>
-            <div style={{ flex: 1 }} />
+            <div style={{ flex:1 }} />
             <button disabled={saving} className="btn accent" type="submit">{saving ? 'Saving…' : 'Create'}</button>
           </div>
         </form>

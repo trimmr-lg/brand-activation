@@ -94,3 +94,13 @@ tbody tr:hover{background:#f9faf1}
 .text-success{color:var(--success)}
 .text-danger{color:var(--danger)}
 .bg-accent{background:var(--accent);color:var(--accent-ink)}
+
+h1, h2, h3, .tab, .section-eyebrow, label.muted {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-family: Montserrat, Inter, system-ui, Arial, sans-serif;
+}
+body {
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+

@@ -4,6 +4,8 @@ import NewEventModal from '../components/NewEventModal.jsx'
 import RescheduleModal from '../components/RescheduleModal.jsx'
 import AssignRepDialog from '../components/AssignRepDialog.jsx'
 
+const headerFont = { fontFamily: 'Montserrat, Inter, system-ui, Arial, sans-serif', textTransform:'uppercase', letterSpacing:'0.08em' }
+
 export default function Dashboard({ profile }){
   const [rows,setRows] = useState([])
   const [loading,setLoading] = useState(true)
@@ -40,8 +42,8 @@ export default function Dashboard({ profile }){
 
   return (
     <div className="card pad">
-      <div className="section-eyebrow">Dashboard</div>
-      <h1>Scheduled Events</h1>
+      <div className="section-eyebrow" style={headerFont}>Dashboard</div>
+      <h1 style={headerFont}>Scheduled Events</h1>
 
       <div className="row" style={{marginBottom:12}}>
         <select className="input" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
@@ -66,14 +68,14 @@ export default function Dashboard({ profile }){
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Brand</th>
-              <th>Dispensary</th>
-              <th>Type</th>
-              <th>Assigned Brand Rep</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th style={headerFont}>Date</th>
+              <th style={headerFont}>Time</th>
+              <th style={headerFont}>Brand</th>
+              <th style={headerFont}>Dispensary</th>
+              <th style={headerFont}>Type</th>
+              <th style={headerFont}>Assigned Brand Rep</th>
+              <th style={headerFont}>Status</th>
+              <th style={headerFont}>Actions</th>
             </tr>
           </thead>
           <tbody>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../lib/supa'
 
+const headerFont = { fontFamily: 'Montserrat, Inter, system-ui, Arial, sans-serif', textTransform:'uppercase', letterSpacing:'0.08em' }
+
 export default function RescheduleModal({ open, eventId, onClose, onSaved }) {
   const [date,setDate] = useState('')
   const [start,setStart] = useState('10:00')
@@ -12,7 +14,7 @@ export default function RescheduleModal({ open, eventId, onClose, onSaved }) {
   useEffect(()=>{ if(!open) return; (async ()=>{
     const [{ data: e }, { data: s }] = await Promise.all([
       supabase.from('events').select('date,start_time,end_time').eq('id', eventId).maybeSingle(),
-      + supabase.from('app_settings_view').select('lead_time_days').maybeSingle()
+      supabase.from('app_settings_view').select('lead_time_days').maybeSingle()
     ])
     if (e){ setDate(e.date); setStart(e.start_time); setEnd(e.end_time) }
     if (s) setLeadDays(s.lead_time_days ?? 0)
@@ -34,20 +36,20 @@ export default function RescheduleModal({ open, eventId, onClose, onSaved }) {
 
   return (
     <div className="modal"><div className="modal-card">
-      <h2>Reschedule</h2>
+      <h2 style={headerFont}>Reschedule</h2>
       <form onSubmit={save} className="grid" style={{gridTemplateColumns:'1fr 1fr', gap:12}}>
         <div>
-          <label className="muted">Date {leadDays? `(≥ ${minStr})`:''}</label>
+          <label className="muted" style={headerFont}>Date {leadDays? `(≥ ${minStr})`:''}</label>
           <input className="input" type="date" required min={minStr} value={date} onChange={e=>setDate(e.target.value)} />
         </div>
         <div className="row">
           <div style={{flex:1}}>
-            <label className="muted">Start</label>
+            <label className="muted" style={headerFont}>Start</label>
             <input className="input" type="time" required value={start} onChange={e=>setStart(e.target.value)} />
           </div>
           <div style={{width:12}}/>
           <div style={{flex:1}}>
-            <label className="muted">End</label>
+            <label className="muted" style={headerFont}>End</label>
             <input className="input" type="time" required value={end} onChange={e=>setEnd(e.target.value)} />
           </div>
         </div>
