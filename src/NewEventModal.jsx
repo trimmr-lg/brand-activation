@@ -1,0 +1,141 @@
+import React, { useEffect, useState } from 'react'
+import { supabase } from '../lib/supa'
+
+export default function NewEventModal({ open, onClose, onCreated }) {
+  const [brands, setBrands] = useState([])
+  const [dispensaries, setDispensaries] = useState([])
+  const [campaigns, setCampaigns] = useState([])
+  const [brandId, setBrandId] = useState('')
+  const [dispId, setDispId] = useState('')
+  const [campId, setCampId] = useState('')
+  const [type, setType] = useState('demo')
+  const [date, setDate] = useState('')
+  const [start, setStart] = useState('10:00')
+  const [end, setEnd] = useState('14:00')
+  const [notes, setNotes] = useState('')
+  const [leadDays, setLeadDays] = useState(0)
+  const [err, setErr] = useState(null)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    ;(async () => {
+      const [b, d, s] = await Promise.all([
+        supabase.from('brands').select('id,name').order('name'),
+        supabase.from('dispensaries').select('id,name').order('name'),
+        supabase.from('app_settings').select('lead_time_days').maybeSingle(),
+      ])
+      if (!b.error) setBrands(b.data || [])
+      if (!d.error) setDispensaries(d.data || [])
+      if (!s.error) setLeadDays(s.data?.lead_time_days ?? 0)
+    })()
+  }, [open])
+
+  useEffect(() => {
+    if (!brandId) { setCampaigns([]); setCampId(''); return }
+    ;(async () => {
+      const { data } = await supabase
+        .from('campaigns')
+        .select('id,name')
+        .eq('brand_id', brandId)
+        .order('name')
+      setCampaigns(data || [])
+    })()
+  }, [brandId])
+
+  if (!open) return null
+
+  const today = new Date()
+  const min = new Date()
+  min.setDate(today.getDate() + Number(leadDays || 0))
+  const minStr = min.toISOString().slice(0, 10)
+  const underLead = date && date < minStr
+
+  async function createEvent(e) {
+    e.preventDefault(); setErr(null)
+    if (underLead) { setErr(`Date violates lead time (${leadDays} days)`); return }
+    setSaving(true)
+    const payload = {
+      brand_id: brandId,
+      dispensary_id: dispId,
+      campaign_id: campId || null,
+      type,
+      status: 'requested',
+      date,
+      start_time: start,
+      end_time: end,
+      notes,
+    }
+    const { error } = await supabase.from('events').insert(payload)
+    setSaving(false)
+    if (error) setErr(error.message)
+    else { onCreated?.(); onClose() }
+  }
+
+  return (
+    <div className="modal">
+      <div className="modal-card">
+        <h2>Request New Event</h2>
+        <form onSubmit={createEvent} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label className="muted">Brand</label>
+            <select className="input" required value={brandId} onChange={e => setBrandId(e.target.value)}>
+              <option value="">Select…</option>
+              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="muted">Dispensary</label>
+            <select className="input" required value={dispId} onChange={e => setDispId(e.target.value)}>
+              <option value="">Select…</option>
+              {dispensaries.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="muted">Campaign (optional)</label>
+            <select className="input" value={campId} onChange={e => setCampId(e.target.value)}>
+              <option value="">—</option>
+              {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="muted">Type</label>
+            <select className="input" value={type} onChange={e => setType(e.target.value)}>
+              <option value="demo">Demo</option>
+              <option value="education">Education</option>
+              <option value="pop_up">Pop-up</option>
+              <option value="sampling">Sampling</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="muted">Date {leadDays ? `(≥ ${minStr})` : ''}</label>
+            <input className="input" type="date" required min={minStr} value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="row">
+            <div style={{ flex: 1 }}>
+              <label className="muted">Start</label>
+              <input className="input" type="time" required value={start} onChange={e => setStart(e.target.value)} />
+            </div>
+            <div style={{ width: 12 }} />
+            <div style={{ flex: 1 }}>
+              <label className="muted">End</label>
+              <input className="input" type="time" required value={end} onChange={e => setEnd(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label className="muted">Notes</label>
+            <textarea className="input" rows="3" value={notes} onChange={e => setNotes(e.target.value)} />
+          </div>
+          {underLead && <div className="text-danger" style={{ gridColumn: '1 / -1' }}>Date violates lead time policy.</div>}
+          {err && <div className="text-danger" style={{ gridColumn: '1 / -1' }}>{err}</div>}
+          <div className="row" style={{ gridColumn: '1 / -1', marginTop: 8 }}>
+            <button type="button" className="btn outline" onClick={onClose}>Close</button>
+            <div style={{ flex: 1 }} />
+            <button disabled={saving} className="btn accent" type="submit">{saving ? 'Saving…' : 'Create'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
