@@ -1,0 +1,108 @@
+import React, { useEffect, useState } from 'react'
+import { supabase } from '../lib/supa'
+import NewEventModal from '../components/NewEventModal.jsx'
+import RescheduleModal from '../components/RescheduleModal.jsx'
+import AssignRepDialog from '../components/AssignRepDialog.jsx'
+
+const headerFont = { fontFamily: 'Montserrat, Inter, system-ui, Arial, sans-serif', textTransform:'uppercase', letterSpacing:'0.08em' }
+
+export default function Dashboard({ profile }){
+  const [rows,setRows] = useState([])
+  const [loading,setLoading] = useState(true)
+  const [error,setError] = useState(null)
+  const [statusFilter,setStatusFilter] = useState('scheduled')
+  const [dateFrom,setDateFrom] = useState('')
+  const [dateTo,setDateTo] = useState('')
+
+  const [newOpen, setNewOpen] = useState(false)
+  const [resOpen, setResOpen] = useState(false)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+
+  async function load(){
+    setLoading(true); setError(null)
+    let q = supabase.from('v_events_dashboard').select('*').order('date',{ascending:true}).order('start_time',{ascending:true})
+    if(statusFilter) q = q.eq('status', statusFilter)
+    if(dateFrom) q = q.gte('date', dateFrom)
+    if(dateTo) q = q.lte('date', dateTo)
+    const { data, error } = await q
+    if(error) setError(error.message); else setRows(data||[])
+    setLoading(false)
+  }
+  useEffect(()=>{ load() }, [statusFilter])
+
+  async function onCancel(id){
+    if(!confirm('Cancel this event?')) return
+    const { error } = await supabase.from('events').update({ status: 'canceled' }).eq('id', id)
+    if(error) alert(error.message); else load()
+  }
+  function onNew(){ setNewOpen(true) }
+  function openReschedule(row){ setSelectedEvent(row); setResOpen(true) }
+  function openAssign(row){ setSelectedEvent(row); setAssignOpen(true) }
+
+  return (
+    <div className="card pad">
+      <div className="section-eyebrow" style={headerFont}>Dashboard</div>
+      <h1 style={headerFont}>Scheduled Events</h1>
+
+      <div className="row" style={{marginBottom:12}}>
+        <select className="input" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+          <option value="">All statuses</option>
+          <option value="requested">Requested</option>
+          <option value="assigned">Assigned</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="canceled">Canceled</option>
+        </select>
+        <input className="input" type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} />
+        <input className="input" type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} />
+        <button className="btn accent" onClick={load}>Filter</button>
+        <div style={{flex:1}}/>
+        <button className="btn" onClick={onNew}>Request New</button>
+      </div>
+
+      {loading && <div className="muted">Loading…</div>}
+      {error && <div className="text-danger">{error}</div>}
+
+      {!loading && !error && (
+        <table>
+          <thead>
+            <tr>
+              <th style={headerFont}>Date</th>
+              <th style={headerFont}>Time</th>
+              <th style={headerFont}>Brand</th>
+              <th style={headerFont}>Dispensary</th>
+              <th style={headerFont}>Type</th>
+              <th style={headerFont}>Assigned Brand Rep</th>
+              <th style={headerFont}>Status</th>
+              <th style={headerFont}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.id}>
+                <td>{r.date}</td>
+                <td>{r.start_time}–{r.end_time}</td>
+                <td>{r.brand_name}</td>
+                <td>{r.dispensary_name}</td>
+                <td>{r.type}</td>
+                <td>{r.assigned_rep_name || '-'}</td>
+                <td>{r.status}</td>
+                <td className="row">
+                  <button className="btn sm outline" onClick={()=>openAssign(r)}>Assign</button>
+                  <button className="btn sm outline" onClick={()=>openReschedule(r)}>Reschedule</button>
+                  <button className="btn sm outline" onClick={()=>onCancel(r.id)}>Cancel</button>
+                </td>
+              </tr>
+            ))}
+            {rows.length===0 && <tr><td colSpan="8" className="muted">No events</td></tr>}
+          </tbody>
+        </table>
+      )}
+
+      <NewEventModal open={newOpen} onClose={()=>setNewOpen(false)} onCreated={load} />
+      <RescheduleModal open={resOpen} eventId={selectedEvent?.id} onClose={()=>setResOpen(false)} onSaved={load} />
+      <AssignRepDialog open={assignOpen} event={selectedEvent} onClose={()=>setAssignOpen(false)} onAssigned={load} />
+    </div>
+  )
+}
