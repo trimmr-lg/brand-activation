@@ -23,7 +23,7 @@ export default function NewEventModal({ open, onClose, onCreated }) {
       const [b, d, s] = await Promise.all([
         supabase.from('brands').select('id,name').order('name'),
         supabase.from('dispensaries').select('id,name').order('name'),
-        supabase.from('app_settings').select('lead_time_days').maybeSingle(),
+        supabase.from('app_settings_view').select('lead_time_days').maybeSingle(),
       ])
       if (!b.error) setBrands(b.data || [])
       if (!d.error) setDispensaries(d.data || [])
